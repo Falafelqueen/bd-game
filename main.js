@@ -41,18 +41,17 @@ class Player {
 // obstacles
 
 class Obstacle {
-  constructor(){
+  constructor(_x){
     this.width = 100;
     this.height = 100;
     this.position = {
-      x: 200,
+      x: _x,
       y: window.innerHeight - this.width
     }
   };
   draw(){
     ctx.fillStyle = "blue";
     ctx.fillRect(this.position.x,this.position.y,this.width, this.height)
-    console.log("drawing obstacle");
   };
 }
 
@@ -60,7 +59,11 @@ class Obstacle {
 const player = new Player()
 
 // create obtacle
-const obstacle = new Obstacle()
+
+const obstacles =[new Obstacle(200), new Obstacle(600)]
+
+let scrollOffset = 0;
+
 const keys = {
   right: {
     pressed: false
@@ -72,14 +75,43 @@ const keys = {
 function animate(){
   requestAnimationFrame(animate) // it will be running the function over and over
   ctx.clearRect(0,0, canvas.width, canvas.height) // so it doesnt drag but clears before
-  obstacle.draw()
+  obstacles.forEach(obstacle => {
+     obstacle.draw()
+  })
   player.update()
-  if(keys.right.pressed){
+  if(keys.right.pressed && player.position.x < 400 ){
     player.velocity.x = 5
   }
-  else if (keys.left.pressed){
+  else if (keys.left.pressed && player.position.x > 100){
     player.velocity.x = -5
   } else player.velocity.x = 0;
+
+  if(keys.right.pressed){
+    obstacles.forEach(obstacle => {
+      obstacle.position.x -= 5
+      scrollOffset += 5
+    })
+  }else if (keys.left.pressed){
+    obstacles.forEach(obstacle => {
+      obstacle.position.x += 5
+      scrollOffset -= 5
+    }
+    )
+  }
+  console.log(scrollOffset)
+obstacles.forEach( obstacle => {
+  if (
+     player.position.x <= obstacle.position.x + obstacle.height && player.position.x >= obstacle.position.x && player.position.y + player.height >= obstacle.position.y ) // player.position.y + player.height gives us the bottom position of the player
+  {
+   player.position.x =  obstacle.position.x - player.width
+    player.velocity.y = 0
+    console.log("oupsieee collision");
+  };
+})
+
+if(scrollOffset == 4000 ){
+  console.log("next level?");
+}
 }
 
 animate()
@@ -89,14 +121,11 @@ animate()
 window.addEventListener("keydown", (e)=>{
   if (e.key == "ArrowUp"){
     player.velocity.y -= 10
-    console.log("jump");
   }
   if (e.key == "ArrowRight") {
-    console.log("aheeead");
     keys.right.pressed = true;
   }
   if (e.key == "ArrowLeft") {
-    console.log("back");
     keys.left.pressed = true;
   }
 })
@@ -104,14 +133,11 @@ window.addEventListener("keydown", (e)=>{
 window.addEventListener("keyup", (e) => {
   if (e.key == "ArrowUp") {
     player.velocity.y -= 10
-    console.log("jump");
   }
   if (e.key == "ArrowRight") {
-    console.log("aheeead");
     keys.right.pressed = false
   }
   if (e.key == "ArrowLeft") {
-    console.log("back");
     keys.left.pressed = false
   }
 })
